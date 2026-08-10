@@ -119,12 +119,12 @@
     const availClass = g.available === 0 ? " avail-0" : "";
 
     tr.innerHTML =
-      '<td class="col-gpu">' + esc(g.name) + '<span class="tier-pill">' + esc(g.tier) + "</span></td>" +
-      '<td class="col-num">' + g.vram_gb + " GB</td>" +
-      '<td class="col-num"><span class="price ' + priceClass + '">$' + fmt(g.price_per_hour) + "</span> <span class=\"price-flat\">" + arrow + "</span></td>" +
-      '<td class="col-num price">$' + fmt(g.price_per_month) + "</td>" +
-      '<td class="col-score"><span class="stars">' + stars(g.score) + "</span></td>" +
-      '<td class="col-avail' + availClass + '">' + g.available + "</td>";
+      '<td class="col-gpu" data-label="GPU">' + esc(g.name) + '<span class="tier-pill">' + esc(g.tier) + "</span></td>" +
+      '<td class="col-num" data-label="显存">' + g.vram_gb + " GB</td>" +
+      '<td class="col-num" data-label="时价"><span class="cell-v"><span class="price ' + priceClass + '">$' + fmt(g.price_per_hour) + "</span> <span class=\"price-flat\">" + arrow + "</span></span></td>" +
+      '<td class="col-num" data-label="月价"><span class="price">$' + fmt(g.price_per_month) + "</span></td>" +
+      '<td class="col-score" data-label="性价比"><span class="stars">' + stars(g.score) + "</span></td>" +
+      '<td class="col-avail' + availClass + '" data-label="可租">' + g.available + "</td>";
     return tr;
   }
 
