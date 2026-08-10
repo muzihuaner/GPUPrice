@@ -1,0 +1,37 @@
+GPUPrice / GPU Rental Price Comparison（GPU价格比较网站
+
+网站最终形态
+搜索 GPU
+[ RTX 4090        ▼ ]
+[ 最低价格/月 ]
+[ VRAM >= 24GB   ]
+
+------------------------------------------------
+
+GPU          VRAM    Price/hr   Price/month  Score
+
+RTX 4090     24GB    $0.18      $131          ⭐⭐⭐⭐⭐
+RTX 5090     32GB    $0.35      $255          ⭐⭐⭐⭐
+A100 80GB    80GB    $0.80      $584          ⭐⭐⭐⭐⭐
+H100         80GB    $1.50      $1095         ⭐⭐⭐⭐
+
+------------------------------------------------
+
+价格趋势
+
+RTX4090
+$0.3 ┤        ╭──
+$0.2 ┤──╮╭────╯
+$0.1 ┤  ╰╯
+     ----------------
+       7 days
+
+核心功能：
+
+GPU实时价格表
+GPU型号搜索
+最便宜排序
+性价比排行
+历史价格趋势
+
+https://storage.googleapis.com/vast-public-gpu-pricing/gpu-pricing-public.json 抓取

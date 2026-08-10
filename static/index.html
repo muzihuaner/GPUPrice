@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuickGPUPrice — GPU 租赁价格对比</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <span class="brand-mark" aria-hidden="true"></span>
+    <span class="brand-name">QuickGPU<span class="brand-accent">Price</span></span>
+  </div>
+  <div class="status">
+    <span class="dot" id="statusDot"></span>
+    <span id="statusText">加载中…</span>
+  </div>
+</header>
+
+<main class="container">
+  <section class="hero">
+    <h1>对比 GPU 租赁价格</h1>
+    <p>覆盖消费级与数据中心级 GPU 的实时租赁价格。按最低价排序，找到每 GB 显存的最佳性价比。</p>
+  </section>
+
+  <section class="controls" aria-label="筛选">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="search" id="searchInput" placeholder="搜索 GPU… 例如 RTX 4090、H100" autocomplete="off">
+    </div>
+
+    <div class="filter-group">
+      <label for="sortSelect">排序</label>
+      <select id="sortSelect">
+        <option value="cheapest">最低时价</option>
+        <option value="value" selected>最佳性价比</option>
+        <option value="vram">最大显存</option>
+        <option value="name">名称 A→Z</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="vramFilter">最小显存</label>
+      <select id="vramFilter">
+        <option value="0">不限</option>
+        <option value="8">8 GB</option>
+        <option value="16">16 GB</option>
+        <option value="24">24 GB</option>
+        <option value="48">48 GB</option>
+        <option value="80">80 GB</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="tierFilter">分类</label>
+      <select id="tierFilter">
+        <option value="all">全部</option>
+        <option value="Flagship Consumer">旗舰消费级</option>
+        <option value="Consumer Other">消费级</option>
+        <option value="Flagship Datacenter">旗舰数据中心</option>
+        <option value="Datacenter Other">数据中心</option>
+      </select>
+    </div>
+  </section>
+
+  <div class="result-meta">
+    <span id="resultCount">—</span>
+    <span id="updatedAt"></span>
+  </div>
+
+  <section class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-gpu">GPU</th>
+          <th class="col-num">显存</th>
+          <th class="col-num">时价</th>
+          <th class="col-num">月价</th>
+          <th class="col-score">性价比</th>
+          <th class="col-avail">可租数量</th>
+        </tr>
+      </thead>
+      <tbody id="gpuRows"></tbody>
+    </table>
+    <div class="empty" id="emptyState" hidden>没有符合筛选条件的 GPU。</div>
+  </section>
+
+  <section class="chart-panel" id="chartPanel" aria-label="价格趋势">
+    <div class="chart-head">
+      <h2 id="chartTitle">点击表格中的 GPU 查看价格趋势</h2>
+      <button id="chartClose" class="icon-btn" title="关闭图表" hidden>
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="chart-body">
+      <div id="chart" role="img" aria-label="历史价格趋势图"></div>
+      <div class="chart-stats" id="chartStats"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <p>数据来源：<a href="#" target="_blank" rel="noopener">vast.ai</a> 公开 GPU 定价，每 10 分钟刷新一次。</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
