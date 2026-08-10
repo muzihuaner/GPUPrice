@@ -168,7 +168,7 @@ select:focus {
   background: var(--bg-raised);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 table { width: 100%; border-collapse: collapse; }
@@ -315,13 +315,55 @@ td.col-gpu { font-family: var(--font-ui); font-weight: 500; }
 }
 
 @media (max-width: 600px) {
-  .container { padding: 20px 14px 48px; }
-  .controls { flex-direction: column; align-items: stretch; }
-  .filter-group { flex-direction: row; align-items: center; justify-content: space-between; }
-  td, thead th { padding: 10px 10px; font-size: 12px; }
+  .container { padding: 16px 12px 40px; }
+  .topbar { padding: 12px 14px; }
+  .brand-name { font-size: 16px; }
+
+  .controls { flex-direction: column; align-items: stretch; gap: 12px; }
+  .filter-group { flex-direction: row; align-items: center; justify-content: space-between; gap: 10px; }
+  .search-box { padding: 12px 14px; }
+  select { padding: 12px 36px 12px 12px; font-size: 16px; }
+  .search-box input { font-size: 16px; }
+
+  .table-wrap { -webkit-overflow-scrolling: touch; }
+  table { min-width: 520px; }
+  thead th.col-gpu,
+  td.col-gpu {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    box-shadow: inset -1px 0 0 var(--border);
+  }
+  thead th.col-gpu { background: var(--bg-muted); }
+  td.col-gpu {
+    background: var(--bg-raised);
+    white-space: nowrap;
+  }
+  tbody tr:hover td.col-gpu { background: var(--bg-muted); }
+  tbody tr.selected td.col-gpu { background: #1E3A2F; }
+
+  td, thead th { padding: 12px 10px; font-size: 12.5px; }
   .tier-pill { display: none; }
   td.col-avail, thead th.col-avail { display: none; }
   .hero p { font-size: 14px; }
+
+  .chart-head { padding: 12px 14px; }
+  .chart-body { padding: 14px; }
+  #chart { height: 200px; }
+  .chart-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .stat { padding: 10px 12px; }
+  .stat .v { font-size: 16px; }
+
+  .empty { padding: 32px 16px; }
+  .footer { padding: 16px 16px 28px; }
+}
+
+@media (max-width: 380px) {
+  .filter-group { flex-direction: column; align-items: stretch; gap: 4px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
