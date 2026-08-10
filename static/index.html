@@ -3,7 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QuickGPUPrice — GPU 租赁价格对比</title>
+<title>快点GPU比价 — GPU 租赁价格实时对比，RTX 4090 / H100 性价比排行</title>
+<meta name="description" content="实时对比 RTX 4090、H100、A100 等消费级与数据中心级 GPU 租赁价格。按最低时价或每 GB 显存性价比排序，附 90 天价格趋势，每 10 分钟自动刷新。">
+<meta name="keywords" content="GPU租赁,GPU价格,算力租赁,RTX 4090 租用,H100 租赁,A100 价格,GPU 云,AI 算力,GPU 比价">
+<meta name="robots" content="index, follow">
+<meta name="author" content="快点GPU比价">
+<meta name="theme-color" content="#0F172A">
+<link rel="canonical" href="https://gpu.quickso.cn/">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="快点GPU比价">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:title" content="快点GPU比价 — GPU 租赁价格实时对比">
+<meta property="og:description" content="实时对比 RTX 4090、H100、A100 等 GPU 租赁价格，按性价比排序，附 90 天价格趋势。">
+<meta property="og:url" content="https://gpu.quickso.cn/">
+<meta property="og:image" content="https://gpu.quickso.cn/og-image.png">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="快点GPU比价 — GPU 租赁价格实时对比">
+<meta name="twitter:description" content="实时对比 RTX 4090、H100、A100 等 GPU 租赁价格，按性价比排序，附 90 天价格趋势。">
+<meta name="twitter:image" content="https://gpu.quickso.cn/og-image.png">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "快点GPU比价",
+  "alternateName": "QuickGPUPrice",
+  "url": "https://gpu.quickso.cn/",
+  "description": "实时对比 RTX 4090、H100、A100 等消费级与数据中心级 GPU 租赁价格，按性价比排序，附 90 天价格趋势。",
+  "inLanguage": "zh-CN",
+  "applicationCategory": "UtilitiesApplication",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "快点GPU比价"
+  }
+}
+</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Fira+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -13,7 +52,7 @@
 <header class="topbar">
   <div class="brand">
     <span class="brand-mark" aria-hidden="true"></span>
-    <span class="brand-name">QuickGPU<span class="brand-accent">Price</span></span>
+    <span class="brand-name">快点<span class="brand-accent">GPU比价</span></span>
   </div>
   <div class="status">
     <span class="dot" id="statusDot"></span>
@@ -23,8 +62,8 @@
 
 <main class="container">
   <section class="hero">
-    <h1>对比 GPU 租赁价格</h1>
-    <p>覆盖消费级与数据中心级 GPU 的实时租赁价格。按最低价排序，找到每 GB 显存的最佳性价比。</p>
+    <h1>GPU 租赁价格实时对比</h1>
+    <p>覆盖消费级与数据中心级 GPU 的实时租赁价格，包括 RTX 4090、H100、A100 等热门算力型号。按最低价或每 GB 显存性价比排序，找到最适合你的 AI 算力方案。</p>
   </section>
 
   <section class="controls" aria-label="筛选">
@@ -104,7 +143,7 @@
 </main>
 
 <footer class="footer">
-  <p>数据来源：<a href="#" target="_blank" rel="noopener">vast.ai</a> 公开 GPU 定价，每 10 分钟刷新一次。</p>
+  <p>数据来源：<a href="#" target="_blank" rel="noopener">vast.ai</a> 公开 GPU 定价，每小时更新一次。</p>
 </footer>
 
 <script src="app.js"></script>
