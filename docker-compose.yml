@@ -1,0 +1,13 @@
+services:
+  gpuprice:
+    build: .
+    image: gpuprice
+    container_name: gpuprice
+    ports:
+      - "2080:8080"
+    volumes:
+      - gpuprice-data:/data
+    restart: unless-stopped
+
+volumes:
+  gpuprice-data:
