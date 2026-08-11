@@ -275,9 +275,28 @@ td.col-gpu { font-family: var(--font-ui); font-weight: 500; }
 
 .chart-body { display: grid; grid-template-columns: 1fr 220px; gap: 20px; padding: 20px; }
 
-#chart { width: 100%; height: 240px; }
+#chart { width: 100%; height: 240px; position: relative; }
 
-#chart svg { width: 100%; height: 100%; display: block; }
+#trendCanvas { width: 100%; height: 100%; display: block; }
+
+.chart-tip {
+  position: absolute;
+  z-index: 5;
+  transform: translate(-50%, -135%);
+  background: var(--bg-muted);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 10px 7px;
+  font-family: var(--font-mono);
+  text-align: center;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+.chart-tip.flip { transform: translate(-50%, 24px); }
+.chart-tip .chart-tip-date { color: var(--fg-dim); font-size: 10.5px; }
+.chart-tip .chart-tip-price { color: var(--accent); font-weight: 700; font-size: 13.5px; }
+.chart-tip[hidden] { display: none; }
 
 .chart-stats { display: flex; flex-direction: column; gap: 10px; }
 
@@ -293,6 +312,10 @@ td.col-gpu { font-family: var(--font-ui); font-weight: 500; }
 
 .stat .v { font-family: var(--font-mono); font-size: 18px; font-weight: 700; margin-top: 2px; }
 
+.stat-hover { border: 1px solid rgba(34, 197, 94, 0.35); box-shadow: inset 3px 0 0 var(--accent); }
+.stat-hover .v { color: var(--accent); }
+.stat-hover[hidden] { display: none; }
+
 .footer {
   padding: 20px 24px 32px;
   text-align: center;
@@ -301,14 +324,6 @@ td.col-gpu { font-family: var(--font-ui); font-weight: 500; }
 }
 
 .footer p { margin: 0; }
-
-.grid-line { stroke: #1E293B; }
-.axis-label { fill: #64748B; font-family: var(--font-mono); font-size: 10px; }
-.trend-line { stroke: var(--accent); stroke-width: 2; fill: none; stroke-linejoin: round; stroke-linecap: round; }
-.trend-area { fill: url(#trendGrad); }
-.trend-dot { fill: var(--accent); }
-.trend-label { fill: var(--fg); font-family: var(--font-mono); font-size: 11px; }
-.tooltip-line { stroke: #475569; stroke-width: 1; stroke-dasharray: 4 3; }
 
 @media (max-width: 860px) {
   .chart-body { grid-template-columns: 1fr; }

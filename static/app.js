@@ -21,6 +21,12 @@
   const chartStats = $("#chartStats");
   const chartClose = $("#chartClose");
 
+  let repaint = null;
+
+  window.addEventListener("resize", () => {
+    if (repaint) repaint(-1);
+  });
+
   async function init() {
     $("#searchInput").addEventListener("input", (e) => {
       state.query = e.target.value.trim().toLowerCase();
@@ -152,6 +158,7 @@
     chartStats.innerHTML = "";
     chartClose.hidden = true;
     chartTitle.textContent = "点击表格中的 GPU 查看价格趋势";
+    repaint = null;
   }
 
   function drawChart(g) {
@@ -161,66 +168,227 @@
     if (!t || t.length < 2) {
       chartEl.innerHTML = "";
       chartStats.innerHTML = "";
+      repaint = null;
       return;
     }
 
     chartStats.innerHTML =
+      '<div class="stat stat-hover" id="hoverStat" hidden>' +
+      '<div class="k">历史价格 · <span id="hoverDate">—</span></div>' +
+      '<div class="v" id="hoverPrice">—</div>' +
+      "</div>" +
       stat("当前时价", "$" + fmt(g.price_per_hour)) +
       stat("月价", "$" + fmt(g.price_per_month)) +
       stat("7 天涨跌", pctChange(t, 7)) +
       stat("90 天最低", "$" + fmt(minTrend(t))) +
       stat("90 天最高", "$" + fmt(maxTrend(t)));
 
-    const W = 600;
-    const H = 240;
+    chartEl.innerHTML =
+      '<canvas id="trendCanvas" aria-hidden="true"></canvas>' +
+      '<div class="chart-tip" id="chartTip" hidden>' +
+      '<div class="chart-tip-date"></div>' +
+      '<div class="chart-tip-price"></div>' +
+      "</div>";
+
+    const canvas = chartEl.querySelector("#trendCanvas");
+    const ctx = canvas.getContext("2d");
+    const tip = chartEl.querySelector("#chartTip");
+    const hoverStat = chartStats.querySelector("#hoverStat");
+    const hoverDate = hoverStat.querySelector("#hoverDate");
+    const hoverPrice = hoverStat.querySelector("#hoverPrice");
+
     const padL = 44;
     const padR = 12;
     const padT = 12;
     const padB = 26;
-    const prices = t.map((p) => p.price);
     const min = minTrend(t);
     const max = maxTrend(t);
     const span = max - min || 1;
     const n = t.length;
+    const prices = t.map((p) => p.price);
 
-    const x = (i) => padL + ((W - padL - padR) * i) / (n - 1);
-    const y = (v) => padT + (H - padT - padB) * (1 - (v - min) / span);
+    let dotCur = null;
+    let dotTarget = null;
+    let rafId = 0;
 
-    const line = prices.map((p, i) => x(i).toFixed(1) + "," + y(p).toFixed(1)).join(" ");
-    const area = padL + "," + (H - padB) + " " + line + " " + x(n - 1).toFixed(1) + "," + (H - padB);
+    function paint(hoverIdx) {
+      const rect = canvas.getBoundingClientRect();
+      const cw = Math.max(rect.width, 1);
+      const ch = Math.max(rect.height, 1);
+      const dpr = window.devicePixelRatio || 1;
+      if (canvas.width !== Math.round(cw * dpr) || canvas.height !== Math.round(ch * dpr)) {
+        canvas.width = Math.round(cw * dpr);
+        canvas.height = Math.round(ch * dpr);
+      }
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, cw, ch);
 
-    const gridYs = [min + span * 0.25, min + span * 0.5, min + span * 0.75];
-    let grids = "";
-    let gridLbls = "";
-    for (const gy of gridYs) {
-      const yy = y(gy).toFixed(1);
-      grids += '<line class="grid-line" x1="' + padL + '" y1="' + yy + '" x2="' + (W - padR) + '" y2="' + yy + '"/>';
-      gridLbls += '<text class="axis-label" x="' + (padL - 6) + '" y="' + (parseFloat(yy) + 3) + '" text-anchor="end">$' + fmt(gy) + "</text>";
+      const px = (i) => padL + ((cw - padL - padR) * i) / (n - 1);
+      const py = (v) => padT + (ch - padT - padB) * (1 - (v - min) / span);
+
+      ctx.font = "10px 'Fira Code', ui-monospace, monospace";
+      ctx.textBaseline = "middle";
+      ctx.lineWidth = 1;
+      const gridYs = [min + span * 0.25, min + span * 0.5, min + span * 0.75];
+      for (const gy of gridYs) {
+        const yy = py(gy);
+        ctx.strokeStyle = "#1E293B";
+        ctx.beginPath();
+        ctx.moveTo(padL, yy);
+        ctx.lineTo(cw - padR, yy);
+        ctx.stroke();
+        ctx.textAlign = "right";
+        ctx.fillStyle = "#64748B";
+        ctx.fillText("$" + fmt(gy), padL - 6, yy);
+      }
+
+      const traceSmooth = () => {
+        for (let i = 0; i < n - 1; i++) {
+          const x0 = px(Math.max(0, i - 1));
+          const y0 = py(prices[Math.max(0, i - 1)]);
+          const x1 = px(i);
+          const y1 = py(prices[i]);
+          const x2 = px(i + 1);
+          const y2 = py(prices[i + 1]);
+          const x3 = px(Math.min(n - 1, i + 2));
+          const y3 = py(prices[Math.min(n - 1, i + 2)]);
+          ctx.bezierCurveTo(
+            x1 + (x2 - x0) / 6,
+            y1 + (y2 - y0) / 6,
+            x2 - (x3 - x1) / 6,
+            y2 - (y3 - y1) / 6,
+            x2,
+            y2
+          );
+        }
+      };
+
+      const grad = ctx.createLinearGradient(0, padT, 0, ch - padB);
+      grad.addColorStop(0, "rgba(34, 197, 94, 0.28)");
+      grad.addColorStop(1, "rgba(34, 197, 94, 0)");
+      ctx.beginPath();
+      ctx.moveTo(padL, ch - padB);
+      ctx.lineTo(px(0), py(prices[0]));
+      traceSmooth();
+      ctx.lineTo(px(n - 1), ch - padB);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(px(0), py(prices[0]));
+      traceSmooth();
+      ctx.strokeStyle = "#22C55E";
+      ctx.lineWidth = 2;
+      ctx.lineJoin = "round";
+      ctx.lineCap = "round";
+      ctx.stroke();
+
+      ctx.font = "11px 'Fira Code', ui-monospace, monospace";
+      ctx.fillStyle = "#F8FAFC";
+      ctx.textBaseline = "top";
+      const labels = [[0, "left"], [Math.floor(n / 2), "center"], [n - 1, "right"]];
+      for (const [i, align] of labels) {
+        let lx = px(i);
+        if (align === "left") lx = Math.max(lx, padL);
+        else if (align === "right") lx = Math.min(lx, cw - padR);
+        ctx.textAlign = align;
+        ctx.fillText(t[i].date.slice(5).replace("-", "/"), lx, ch - padB + 7);
+      }
+
+      if (hoverIdx < 0) return;
+      const p = t[hoverIdx];
+      const hx = dotCur ? dotCur.x : px(hoverIdx);
+      const hy = dotCur ? dotCur.y : py(p.price);
+
+      ctx.setLineDash([4, 3]);
+      ctx.strokeStyle = "#475569";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(hx, padT);
+      ctx.lineTo(hx, ch - padB);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.beginPath();
+      ctx.arc(hx, hy, 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = "#22C55E";
+      ctx.fill();
+      ctx.strokeStyle = "#F8FAFC";
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      tip.querySelector(".chart-tip-date").textContent = p.date.replace(/-/g, "/");
+      tip.querySelector(".chart-tip-price").textContent = "$" + fmt(p.price);
+      tip.classList.toggle("flip", hy < 48);
+      tip.style.left = ((hx / cw) * 100).toFixed(2) + "%";
+      tip.style.top = ((hy / ch) * 100).toFixed(2) + "%";
+      tip.removeAttribute("hidden");
+      hoverDate.textContent = p.date.replace(/-/g, "/");
+      hoverPrice.textContent = "$" + fmt(p.price);
+      hoverStat.removeAttribute("hidden");
     }
 
-    const dots = [0, Math.floor(n / 2), n - 1]
-      .map((i, k) => {
-        const d = t[i].date.slice(5).replace("-", "/");
-        return (
-          '<line class="tooltip-line" x1="' + x(i).toFixed(1) + '" y1="' + padT + '" x2="' + x(i).toFixed(1) + '" y2="' + (H - padB) + '"/>' +
-          '<circle class="trend-dot" cx="' + x(i).toFixed(1) + '" cy="' + y(t[i].price).toFixed(1) + '" r="3.5"/>' +
-          '<text class="trend-label" x="' + x(i).toFixed(1) + '" y="' + (H - 8) + '" text-anchor="' + (k === 0 ? "start" : k === 2 ? "end" : "middle") + '">' + d + "</text>"
-        );
-      })
-      .join("");
+    function hideTip() {
+      tip.setAttribute("hidden", "");
+      hoverStat.setAttribute("hidden", "");
+    }
 
-    chartEl.innerHTML =
-      '<svg viewBox="0 0 ' + W + " " + H + '" preserveAspectRatio="none" aria-hidden="true">' +
-      '<defs><linearGradient id="trendGrad" x1="0" y1="0" x2="0" y2="1">' +
-      '<stop offset="0%" stop-color="#22C55E" stop-opacity="0.28"/>' +
-      '<stop offset="100%" stop-color="#22C55E" stop-opacity="0"/>' +
-      "</linearGradient></defs>" +
-      grids +
-      gridLbls +
-      '<polygon class="trend-area" points="' + area + '"/>' +
-      '<polyline class="trend-line" points="' + line + '"/>' +
-      dots +
-      "</svg>";
+    repaint = paint;
+    paint(-1);
+
+    const idxOf = (clientX) => {
+      const rect = canvas.getBoundingClientRect();
+      const lx = clientX - rect.left;
+      if (lx < padL - 6 || lx > rect.width - padR + 6) return -1;
+      return Math.max(0, Math.min(n - 1, Math.round(((lx - padL) / (rect.width - padL - padR)) * (n - 1))));
+    };
+
+    const move = (clientX) => {
+      const i = idxOf(clientX);
+      if (i < 0) {
+        cancelAnimationFrame(rafId);
+        hideTip();
+        paint(-1);
+        return;
+      }
+      const rect = canvas.getBoundingClientRect();
+      const cw = Math.max(rect.width, 1);
+      const ch = Math.max(rect.height, 1);
+      const ax = (ii) => padL + ((cw - padL - padR) * ii) / (n - 1);
+      const ay = (v) => padT + (ch - padT - padB) * (1 - (v - min) / span);
+      const tx = ax(i);
+      const ty = ay(prices[i]);
+      if (!dotCur) dotCur = { x: tx, y: ty };
+      dotTarget = { x: tx, y: ty };
+      cancelAnimationFrame(rafId);
+      const step = () => {
+        dotCur.x += (dotTarget.x - dotCur.x) * 0.18;
+        dotCur.y += (dotTarget.y - dotCur.y) * 0.18;
+        paint(i);
+        if (Math.abs(dotCur.x - dotTarget.x) > 0.4 || Math.abs(dotCur.y - dotTarget.y) > 0.4) {
+          rafId = requestAnimationFrame(step);
+        }
+      };
+      rafId = requestAnimationFrame(step);
+    };
+
+    const leave = () => {
+      cancelAnimationFrame(rafId);
+      dotCur = null;
+      hideTip();
+      paint(-1);
+    };
+
+    canvas.addEventListener("mousemove", (e) => move(e.clientX));
+    canvas.addEventListener("mouseleave", leave);
+    canvas.addEventListener("touchmove", (e) => {
+      if (e.touches.length) move(e.touches[0].clientX);
+    }, { passive: true });
+    canvas.addEventListener("touchstart", (e) => {
+      if (e.touches.length) move(e.touches[0].clientX);
+    }, { passive: true });
+    canvas.addEventListener("touchend", leave);
   }
 
   function stat(k, v) {
