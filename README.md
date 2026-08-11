@@ -92,6 +92,10 @@ docker rm gpuprice            # 删除容器
 
 > 说明：容器内以非 root 用户 `appuser` 运行，仅对 `/data` 目录有写权限。
 
+### docker compose
+
+docker compose up -d --build — 部署/更新
+
 ---
 
 ## 项目结构
